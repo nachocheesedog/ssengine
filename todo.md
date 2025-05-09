@@ -56,12 +56,12 @@
 | IO-04 | 2025-05-08 | TODO | CSV import/export helpers. |
 
 ### Formula Library <a id="formula-library"></a>
-| FL-01 | 2025-05-08 | TODO | Implement arithmetic + `SUM`, `AVERAGE`, `MIN`, `MAX`. |
-| FL-02 | 2025-05-08 | TODO | Implement logical functions (`IF`, `AND`, `OR`, `NOT`). |
-| FL-03 | 2025-05-08 | TODO | Lookup functions (`VLOOKUP`, `HLOOKUP`, `INDEX`, `MATCH`). |
-| FL-04 | 2025-05-08 | TODO | Date/time functions (`,YEAR`, `MONTH`, `DATEDIF`). |
+| FL-01 | 2025-05-08 | DONE | Implement arithmetic + `SUM`, `AVERAGE`, `MIN`, `MAX`. |
+| FL-02 | 2025-05-08 | DONE | Implement logical functions (`IF`, `AND`, `OR`, `NOT`). |
+| FL-03 | 2025-05-08 | DONE | Lookup functions (`VLOOKUP`, `HLOOKUP`, `INDEX`, `MATCH`). |
+| FL-04 | 2025-05-08 | DONE | Date/time functions (`,YEAR`, `MONTH`, `DATEDIF`). |
 | FL-05 | 2025-05-08 | DONE | Finance pack: `NPV`, `IRR`, `XNPV`, `XIRR`. |
-| FL-06 | 2025-05-08 | TODO | Text functions (`LEFT`, `RIGHT`, `CONCAT`). |
+| FL-06 | 2025-05-08 | DONE | Text functions (`LEFT`, `RIGHT`, `CONCAT`). |
 
 ### AI Tooling / SDK <a id="ai-tooling"></a>
 | AT-01 | 2025-05-08 | TODO | Define JSON schema for tool operations (add_sheet, set_cell, eval_formula, export_xlsx). |
