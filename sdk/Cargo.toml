@@ -1,0 +1,30 @@
+[package]
+name = "ssengine-sdk"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+description = "HTTP/JSON API for AI agents to interact with the ssengine spreadsheet engine."
+rust-version = { workspace = true }
+
+[dependencies]
+ssengine-core = { path = "../core" }
+ssengine-io = { path = "../io" }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+tokio = { workspace = true }
+
+# HTTP server
+axum = "0.7"
+# Converts JSON schema to OpenAPI
+schemars = "0.8"
+# CLI argument parsing
+clap = { version = "4.4", features = ["derive"] }
+# CORS handling
+tower-http = { version = "0.5", features = ["cors"] }
+# Logging middleware
+tower-http-log = "0.4"

@@ -1,0 +1,50 @@
+// Basic spreadsheet formula grammar for pest
+
+// Whitespace handling
+WHITESPACE = _{ " " | "\t" }
+
+// Main formula rule
+formula = { SOI ~ expression ~ EOI }
+
+// Expression hierarchy following operator precedence
+expression = { comparison }
+comparison = { concatenation ~ ((equal | not_equal | greater_than | greater_than_eq | less_than | less_than_eq) ~ concatenation)* }
+concatenation = { addition ~ ("&" ~ addition)* }
+addition = { multiplication ~ ((plus | minus) ~ multiplication)* }
+multiplication = { power ~ ((multiply | divide) ~ power)* }
+power = { unary ~ ("^" ~ unary)* }
+unary = { (plus | minus)? ~ atom }
+atom = _{ literal | reference | function_call | "(" ~ expression ~ ")" }
+
+// Operators
+plus = { "+" }
+minus = { "-" }
+multiply = { "*" }
+divide = { "/" }
+equal = { "=" }
+not_equal = { "<>" }
+greater_than = { ">" }
+greater_than_eq = { ">=" }
+less_than = { "<" }
+less_than_eq = { "<=" }
+
+// Cell references
+reference = { sheet_prefix? ~ cell_address ~ range_suffix? }
+sheet_prefix = { sheet_name ~ "!" }
+sheet_name = @{ ("'" ~ (!'"' ~ ANY)* ~ "'") | (!['!'] ~ ASCII_ALPHA ~ ASCII_ALPHANUMERIC*) }
+cell_address = @{ column ~ row }
+range_suffix = { ":" ~ cell_address }
+column = @{ ASCII_ALPHA+ }
+row = @{ ASCII_DIGIT+ }
+
+// Function calls
+function_call = { function_name ~ "(" ~ argument_list? ~ ")" }
+function_name = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+argument_list = { expression ~ ("," ~ expression)* }
+
+// Literals
+literal = _{ number | string | boolean | error }
+number = @{ ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? ~ (^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+)? }
+string = @{ "\"" ~ (!"\\\"")* ~ "\"" }
+boolean = @{ ^"TRUE" | ^"FALSE" }
+error = @{ "#" ~ ASCII_ALPHA+ ~ ("!" | "?") }

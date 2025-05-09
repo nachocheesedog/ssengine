@@ -1,0 +1,26 @@
+[package]
+name = "ssengine-io"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+description = "I/O functionality for XLSX and CSV files for ssengine."
+rust-version = { workspace = true }
+
+[dependencies]
+ssengine-core = { path = "../core" }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+
+# XLSX writing
+rust_xlsxwriter = "0.61"
+
+# XLSX reading
+calamine = "0.24"
+
+# CSV processing
+csv = "1.3"

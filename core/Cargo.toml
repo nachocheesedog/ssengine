@@ -1,0 +1,28 @@
+[package]
+name = "ssengine-core"
+version = { workspace = true }
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+description = "Core data structures, formula parser, and evaluation engine for ssengine."
+rust-version = { workspace = true }
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+
+# Parser
+pest = "2.7"
+pest_derive = "2.7"
+
+# Data structures
+hashbrown = "0.14" # Efficient HashMap, as planned in todo.md for sparse cell storage
+petgraph = "0.6"   # For dependency graph
+chrono = { version = "0.4", features = ["serde"] } # For datetime cell values
+
+# Optional: String interning for Cell::Text to save memory
+# string_interner = "0.12"
+# once_cell = "1.19" # For initializing a global interner if used
