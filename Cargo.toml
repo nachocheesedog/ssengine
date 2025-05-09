@@ -1,0 +1,30 @@
+[workspace]
+resolver = "2"
+members = [
+    "core",
+    "io",
+    "sdk",
+    "cli"
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Cascade AI <cascade@windsurf.ai>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/user/ssengine" # Placeholder - User to update
+description = "A Rust-based spreadsheet engine for AI agents."
+rust-version = "1.70"
+
+[workspace.dependencies]
+# Core utilities, will be fleshed out per-crate later
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+log = "0.4"
+
+# Async runtime (can be moved to specific crates if not workspace-wide)
+tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] } # Common features
+
+# Specific large dependencies will be in their respective crates' Cargo.toml
+# e.g., pest, rust_xlsxwriter, calamine, axum
