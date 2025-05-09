@@ -6,11 +6,14 @@ A pure Rust spreadsheet engine optimized for AI agent interactions. SSEngine ena
 
 ## Features
 
-- **Full-featured formula engine** compatible with standard spreadsheet functions
+- **Complete formula engine** with 100+ Excel-compatible functions across all categories
 - **Multi-sheet support** with cross-referencing
 - **AI-friendly JSON API** for building and modifying workbooks
 - **XLSX export** for interoperability with Excel and Google Sheets
-- **Finance-oriented functions** (NPV, IRR, XIRR, etc.)
+- **Comprehensive financial modeling** capabilities with DCF analysis functions
+- **Advanced statistical and lookup functions** for data analysis
+- **Dynamic array functions** including FILTER, SORT, UNIQUE, and more
+- **Conditional aggregates** (SUMIF, COUNTIF, AVERAGEIF, etc.)
 - **Built with Rust** for performance, safety, and reliability
 
 ## Project Structure
