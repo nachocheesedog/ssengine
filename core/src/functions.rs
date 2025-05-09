@@ -40,9 +40,79 @@ impl FunctionRegistry {
         // Math functions
         self.register("SUM", sum);
         self.register("AVERAGE", average);
+        self.register("COUNT", count);
+        self.register("COUNTA", counta);
+        self.register("MAX", max);
+        self.register("MIN", min);
+        self.register("ROUND", round);
+        self.register("ROUNDDOWN", rounddown);
+        self.register("ROUNDUP", roundup);
+        self.register("SQRT", sqrt);
+        self.register("ABS", abs);
+        self.register("POWER", power);
+        self.register("PRODUCT", product);
+        
+        // Statistical functions
+        self.register("STDEV", stdev);
+        self.register("STDEVP", stdevp);
+        self.register("VAR", var_func);
+        self.register("VARP", varp);
+        self.register("MEDIAN", median);
+        self.register("PERCENTILE", percentile);
         
         // Logical functions
         self.register("IF", if_func);
+        self.register("AND", and);
+        self.register("OR", or);
+        self.register("NOT", not);
+        self.register("TRUE", true_func);
+        self.register("FALSE", false_func);
+        self.register("ISBLANK", is_blank);
+        self.register("ISERROR", is_error);
+        self.register("ISNUMBER", is_number);
+        
+        // Text functions
+        self.register("CONCATENATE", concatenate);
+        self.register("LEFT", left);
+        self.register("RIGHT", right);
+        self.register("MID", mid);
+        self.register("LEN", len);
+        self.register("LOWER", lower);
+        self.register("UPPER", upper);
+        self.register("TRIM", trim);
+        self.register("SUBSTITUTE", substitute);
+        self.register("FIND", find);
+        self.register("TEXT", text_format);
+        
+        // Date functions
+        self.register("TODAY", today);
+        self.register("NOW", now);
+        self.register("DATE", date);
+        self.register("YEAR", year);
+        self.register("MONTH", month);
+        self.register("DAY", day);
+        self.register("WEEKDAY", weekday);
+        self.register("DATEDIF", datedif);
+        
+        // Lookup functions
+        self.register("VLOOKUP", vlookup);
+        self.register("HLOOKUP", hlookup);
+        self.register("INDEX", index);
+        self.register("MATCH", match_func);
+        self.register("CHOOSE", choose);
+        
+        // Information functions
+        self.register("ISNA", is_na);
+        self.register("NA", na);
+        self.register("ISERR", is_err);
+        self.register("ERROR.TYPE", error_type);
+        self.register("ISTEXT", is_text);
+        
+        // Engineering functions
+        self.register("BIN2DEC", bin2dec);
+        self.register("DEC2BIN", dec2bin);
+        self.register("HEX2DEC", hex2dec);
+        self.register("DEC2HEX", dec2hex);
         
         // Financial functions (DCF modeling)
         self.register("NPV", npv);
@@ -50,6 +120,16 @@ impl FunctionRegistry {
         self.register("PMT", pmt);
         self.register("PV", pv);
         self.register("FV", fv);
+        self.register("IPMT", ipmt);
+        self.register("PPMT", ppmt);
+        self.register("NPER", nper);
+        self.register("RATE", rate);
+        self.register("XNPV", xnpv);
+        self.register("XIRR", xirr);
+        self.register("DB", db);
+        self.register("SLN", sln);
+        self.register("SYD", syd);
+        self.register("DDB", ddb);
     }
 }
 
@@ -304,7 +384,7 @@ fn extract_number(value: &CellValue, name: &str) -> Result<f64, EngineError> {
     }
 }
 
-// ===== BASIC FUNCTIONS =====
+// ===== MATHEMATICAL FUNCTIONS =====
 
 // SUM function
 fn sum(args: &[CellValue]) -> Result<CellValue, EngineError> {
