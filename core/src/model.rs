@@ -587,7 +587,7 @@ impl Workbook {
                 let formula_clone = formula.clone();
                 
                 // Evaluate the formula
-                let result = self.evaluator.evaluate_formula(self, &sheet_name, &formula_clone)?;
+                let result = self.evaluator.evaluate_formula(self, &sheet_name, &cell_addr, &formula_clone)?;
                 
                 // Update the calculated value
                 let sheet = self.sheets.get_mut(&sheet_name).unwrap();

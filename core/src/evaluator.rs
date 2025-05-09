@@ -76,9 +76,9 @@ impl Evaluator {
     }
 
     /// Evaluate a formula string by parsing to AST and evaluating
-    pub fn evaluate_formula(&self, workbook: &Workbook, sheet: &str, formula: &str) -> Result<CellValue, EngineError> {
+    pub fn evaluate_formula(&self, workbook: &Workbook, sheet: &str, cell_addr: &CellAddress, formula: &str) -> Result<CellValue, EngineError> {
         let ast = crate::parser::parse_formula(formula)?;
-        let mut ctx = EvaluationContext::new(workbook, sheet, CellAddress::from_a1(formula)?);
+        let mut ctx = EvaluationContext::new(workbook, sheet, cell_addr.clone());
         self.evaluate(&ast, &mut ctx)
     }
 
