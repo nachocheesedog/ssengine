@@ -406,45 +406,486 @@ fn sum(args: &[CellValue]) -> Result<CellValue, EngineError> {
 
 // AVERAGE function
 fn average(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    let mut valid_count = 0;
     let mut total = 0.0;
-    let mut count = 0;
-    
+
     for arg in args {
         match arg {
             CellValue::Number(n) => {
                 total += n;
-                count += 1;
+                valid_count += 1;
             },
             CellValue::Boolean(b) => {
                 total += if *b { 1.0 } else { 0.0 };
-                count += 1;
+                valid_count += 1;
             },
-            CellValue::Text(_) => return Err(EngineError::EvaluationError("Cannot average text values".into())),
-            CellValue::Blank => {}, // Ignore blank cells
-            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Formulas should be evaluated before using in functions".into())),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in AVERAGE".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+
+    if valid_count == 0 {
+        return Err(EngineError::EvaluationError("AVERAGE requires at least one numeric value".into()));
+    }
+
+    Ok(CellValue::Number(total / valid_count as f64))
+}
+
+// COUNT function - counts number of cells with numbers
+fn count(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    let count = args.iter().filter(|arg| matches!(arg, CellValue::Number(_))).count();
+    Ok(CellValue::Number(count as f64))
+}
+
+// COUNTA function - counts number of cells that are not empty
+fn counta(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    let count = args.iter().filter(|arg| !matches!(arg, CellValue::Blank)).count();
+    Ok(CellValue::Number(count as f64))
+}
+
+// MAX function - returns the largest value
+fn max(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    let mut max_value = f64::NEG_INFINITY;
+    let mut found_any = false;
+
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => {
+                max_value = max_value.max(*n);
+                found_any = true;
+            },
+            CellValue::Boolean(b) => {
+                let value = if *b { 1.0 } else { 0.0 };
+                max_value = max_value.max(value);
+                found_any = true;
+            },
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in MAX".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+
+    if !found_any {
+        return Err(EngineError::EvaluationError("MAX requires at least one numeric value".into()));
+    }
+
+    Ok(CellValue::Number(max_value))
+}
+
+// MIN function - returns the smallest value
+fn min(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    let mut min_value = f64::INFINITY;
+    let mut found_any = false;
+
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => {
+                min_value = min_value.min(*n);
+                found_any = true;
+            },
+            CellValue::Boolean(b) => {
+                let value = if *b { 1.0 } else { 0.0 };
+                min_value = min_value.min(value);
+                found_any = true;
+            },
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in MIN".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+
+    if !found_any {
+        return Err(EngineError::EvaluationError("MIN requires at least one numeric value".into()));
+    }
+
+    Ok(CellValue::Number(min_value))
+}
+
+// ROUND function - rounds a number to a specified number of digits
+fn round(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 2 {
+        return Err(EngineError::EvaluationError("ROUND requires exactly 2 arguments: number and num_digits".into()));
+    }
+    
+    // Get the number to round
+    let number = extract_number(&args[0], "number")?;
+    
+    // Get the number of digits to round to
+    let num_digits = extract_number(&args[1], "num_digits")?;
+    let num_digits_int = num_digits as i32;
+    
+    // Calculate the rounded value
+    let multiplier = 10.0_f64.powi(num_digits_int);
+    let rounded = (number * multiplier).round() / multiplier;
+    
+    Ok(CellValue::Number(rounded))
+}
+
+// ROUNDDOWN function - rounds a number down to a specified number of digits
+fn rounddown(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 2 {
+        return Err(EngineError::EvaluationError("ROUNDDOWN requires exactly 2 arguments: number and num_digits".into()));
+    }
+    
+    // Get the number to round
+    let number = extract_number(&args[0], "number")?;
+    
+    // Get the number of digits to round to
+    let num_digits = extract_number(&args[1], "num_digits")?;
+    let num_digits_int = num_digits as i32;
+    
+    // Calculate the rounded value
+    let multiplier = 10.0_f64.powi(num_digits_int);
+    let sign = if number >= 0.0 { 1.0 } else { -1.0 };
+    let abs_number = number.abs();
+    let rounded = sign * ((abs_number * multiplier).floor() / multiplier);
+    
+    Ok(CellValue::Number(rounded))
+}
+
+// ROUNDUP function - rounds a number up to a specified number of digits
+fn roundup(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 2 {
+        return Err(EngineError::EvaluationError("ROUNDUP requires exactly 2 arguments: number and num_digits".into()));
+    }
+    
+    // Get the number to round
+    let number = extract_number(&args[0], "number")?;
+    
+    // Get the number of digits to round to
+    let num_digits = extract_number(&args[1], "num_digits")?;
+    let num_digits_int = num_digits as i32;
+    
+    // Calculate the rounded value
+    let multiplier = 10.0_f64.powi(num_digits_int);
+    let sign = if number >= 0.0 { 1.0 } else { -1.0 };
+    let abs_number = number.abs();
+    let rounded = sign * ((abs_number * multiplier).ceil() / multiplier);
+    
+    Ok(CellValue::Number(rounded))
+}
+
+// SQRT function - returns the square root of a number
+fn sqrt(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("SQRT requires exactly 1 argument".into()));
+    }
+    
+    let number = extract_number(&args[0], "number")?;
+    
+    if number < 0.0 {
+        return Err(EngineError::EvaluationError("SQRT requires a non-negative number".into()));
+    }
+    
+    Ok(CellValue::Number(number.sqrt()))
+}
+
+// ABS function - returns the absolute value of a number
+fn abs(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("ABS requires exactly 1 argument".into()));
+    }
+    
+    let number = extract_number(&args[0], "number")?;
+    Ok(CellValue::Number(number.abs()))
+}
+
+// POWER function - returns a number raised to a power
+fn power(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 2 {
+        return Err(EngineError::EvaluationError("POWER requires exactly 2 arguments: number and power".into()));
+    }
+    
+    let base = extract_number(&args[0], "base")?;
+    let exponent = extract_number(&args[1], "exponent")?;
+    
+    // Handle negative base with non-integer exponent (which would result in a complex number)
+    if base < 0.0 && exponent.fract() != 0.0 {
+        return Err(EngineError::EvaluationError("POWER cannot raise a negative number to a non-integer power".into()));
+    }
+    
+    // Handle base of zero with negative exponent (division by zero)
+    if base == 0.0 && exponent < 0.0 {
+        return Err(EngineError::EvaluationError("POWER cannot raise zero to a negative power".into()));
+    }
+    
+    Ok(CellValue::Number(base.powf(exponent)))
+}
+
+// PRODUCT function - multiplies all the numbers given as arguments
+fn product(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    let mut product = 1.0;
+    let mut found_any = false;
+
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => {
+                product *= n;
+                found_any = true;
+            },
+            CellValue::Boolean(b) => {
+                if *b { product *= 1.0; } else { product *= 0.0; }
+                found_any = true;
+            },
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in PRODUCT".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+
+    if !found_any {
+        return Err(EngineError::EvaluationError("PRODUCT requires at least one numeric value".into()));
+    }
+
+    Ok(CellValue::Number(product))
+}
+
+// ===== STATISTICAL FUNCTIONS =====
+
+// STDEV function - calculates standard deviation based on a sample
+fn stdev(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() < 2 {
+        return Err(EngineError::EvaluationError("STDEV requires at least 2 values".into()));
+    }
+    
+    // Extract numeric values
+    let mut values = Vec::new();
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => values.push(*n),
+            CellValue::Boolean(b) => values.push(if *b { 1.0 } else { 0.0 }),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in STDEV".into())),
             CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
         }
     }
     
-    if count == 0 {
-        return Err(EngineError::EvaluationError("AVERAGE requires at least one numeric value".into()));
+    if values.len() < 2 {
+        return Err(EngineError::EvaluationError("STDEV requires at least 2 numeric values".into()));
     }
     
-    Ok(CellValue::Number(total / count as f64))
+    // Calculate mean
+    let n = values.len() as f64;
+    let mean = values.iter().sum::<f64>() / n;
+    
+    // Calculate sum of squared differences
+    let sum_sq_diff = values.iter().map(|x| (*x - mean).powi(2)).sum::<f64>();
+    
+    // Calculate standard deviation (sample)
+    let stdev = (sum_sq_diff / (n - 1.0)).sqrt();
+    
+    Ok(CellValue::Number(stdev))
 }
+
+// STDEVP function - calculates standard deviation based on the entire population
+fn stdevp(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() < 1 {
+        return Err(EngineError::EvaluationError("STDEVP requires at least 1 value".into()));
+    }
+    
+    // Extract numeric values
+    let mut values = Vec::new();
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => values.push(*n),
+            CellValue::Boolean(b) => values.push(if *b { 1.0 } else { 0.0 }),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in STDEVP".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+    
+    if values.is_empty() {
+        return Err(EngineError::EvaluationError("STDEVP requires at least 1 numeric value".into()));
+    }
+    
+    // Calculate mean
+    let n = values.len() as f64;
+    let mean = values.iter().sum::<f64>() / n;
+    
+    // Calculate sum of squared differences
+    let sum_sq_diff = values.iter().map(|x| (*x - mean).powi(2)).sum::<f64>();
+    
+    // Calculate standard deviation (population)
+    let stdevp = (sum_sq_diff / n).sqrt();
+    
+    Ok(CellValue::Number(stdevp))
+}
+
+// VAR function - calculates variance based on a sample
+fn var_func(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() < 2 {
+        return Err(EngineError::EvaluationError("VAR requires at least 2 values".into()));
+    }
+    
+    // Extract numeric values
+    let mut values = Vec::new();
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => values.push(*n),
+            CellValue::Boolean(b) => values.push(if *b { 1.0 } else { 0.0 }),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in VAR".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+    
+    if values.len() < 2 {
+        return Err(EngineError::EvaluationError("VAR requires at least 2 numeric values".into()));
+    }
+    
+    // Calculate mean
+    let n = values.len() as f64;
+    let mean = values.iter().sum::<f64>() / n;
+    
+    // Calculate sum of squared differences
+    let sum_sq_diff = values.iter().map(|x| (*x - mean).powi(2)).sum::<f64>();
+    
+    // Calculate variance (sample)
+    let variance = sum_sq_diff / (n - 1.0);
+    
+    Ok(CellValue::Number(variance))
+}
+
+// VARP function - calculates variance based on the entire population
+fn varp(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() < 1 {
+        return Err(EngineError::EvaluationError("VARP requires at least 1 value".into()));
+    }
+    
+    // Extract numeric values
+    let mut values = Vec::new();
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => values.push(*n),
+            CellValue::Boolean(b) => values.push(if *b { 1.0 } else { 0.0 }),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in VARP".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+    
+    if values.is_empty() {
+        return Err(EngineError::EvaluationError("VARP requires at least 1 numeric value".into()));
+    }
+    
+    // Calculate mean
+    let n = values.len() as f64;
+    let mean = values.iter().sum::<f64>() / n;
+    
+    // Calculate sum of squared differences
+    let sum_sq_diff = values.iter().map(|x| (*x - mean).powi(2)).sum::<f64>();
+    
+    // Calculate variance (population)
+    let variance = sum_sq_diff / n;
+    
+    Ok(CellValue::Number(variance))
+}
+
+// MEDIAN function - returns the median (middle value) of the given numbers
+fn median(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.is_empty() {
+        return Err(EngineError::EvaluationError("MEDIAN requires at least 1 value".into()));
+    }
+    
+    // Extract numeric values
+    let mut values = Vec::new();
+    for arg in args {
+        match arg {
+            CellValue::Number(n) => values.push(*n),
+            CellValue::Boolean(b) => values.push(if *b { 1.0 } else { 0.0 }),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in MEDIAN".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+    
+    if values.is_empty() {
+        return Err(EngineError::EvaluationError("MEDIAN requires at least 1 numeric value".into()));
+    }
+    
+    // Sort the values
+    values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    
+    // Find the median
+    let n = values.len();
+    let median = if n % 2 == 0 {
+        // Even number of elements, average the two middle values
+        (values[n/2 - 1] + values[n/2]) / 2.0
+    } else {
+        // Odd number of elements, return the middle value
+        values[n/2]
+    };
+    
+    Ok(CellValue::Number(median))
+}
+
+// PERCENTILE function - returns the k-th percentile of values in a range
+fn percentile(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() < 2 {
+        return Err(EngineError::EvaluationError("PERCENTILE requires at least 2 arguments: array and k".into()));
+    }
+    
+    // Extract k (percentile value between 0 and 1)
+    let k = match args.last() {
+        Some(CellValue::Number(n)) => *n,
+        _ => return Err(EngineError::EvaluationError("PERCENTILE requires k to be a number between 0 and 1".into())),
+    };
+    
+    if k < 0.0 || k > 1.0 {
+        return Err(EngineError::EvaluationError("PERCENTILE requires k to be between 0 and 1".into()));
+    }
+    
+    // Extract numeric values (excluding the last argument which is k)
+    let mut values = Vec::new();
+    for arg in args.iter().take(args.len() - 1) {
+        match arg {
+            CellValue::Number(n) => values.push(*n),
+            CellValue::Boolean(b) => values.push(if *b { 1.0 } else { 0.0 }),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot include formulas directly in PERCENTILE".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+    
+    if values.is_empty() {
+        return Err(EngineError::EvaluationError("PERCENTILE requires at least 1 numeric value in the array".into()));
+    }
+    
+    // Sort the values
+    values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    
+    // Calculate the position
+    let n = values.len() as f64;
+    let position = k * (n - 1.0);
+    let position_index = position.floor() as usize;
+    let position_fraction = position - position.floor();
+    
+    // Calculate the percentile value
+    let percentile = if position_index >= values.len() - 1 {
+        values[values.len() - 1]
+    } else {
+        values[position_index] + position_fraction * (values[position_index + 1] - values[position_index])
+    };
+    
+    Ok(CellValue::Number(percentile))
+}
+
+// ===== LOGICAL FUNCTIONS =====
 
 // IF function
 fn if_func(args: &[CellValue]) -> Result<CellValue, EngineError> {
     if args.len() != 3 {
-        return Err(EngineError::EvaluationError("IF requires exactly 3 arguments".into()));
+        return Err(EngineError::EvaluationError("IF requires exactly 3 arguments: condition, value_if_true, value_if_false".into()));
     }
     
     let condition = match &args[0] {
         CellValue::Boolean(b) => *b,
         CellValue::Number(n) => *n != 0.0,
-        CellValue::Text(s) => !s.is_empty(),
+        CellValue::Text(t) => !t.is_empty(),
         CellValue::Blank => false,
-        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Formulas should be evaluated before using in functions".into())),
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula as a condition".into())),
         CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
     };
     
@@ -453,4 +894,294 @@ fn if_func(args: &[CellValue]) -> Result<CellValue, EngineError> {
     } else {
         Ok(args[2].clone())
     }
+}
+
+// AND function - returns TRUE if all arguments are TRUE
+fn and(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.is_empty() {
+        return Err(EngineError::EvaluationError("AND requires at least one argument".into()));
+    }
+    
+    for arg in args {
+        let value = match arg {
+            CellValue::Boolean(b) => *b,
+            CellValue::Number(n) => *n != 0.0,
+            CellValue::Text(t) => !t.is_empty(),
+            CellValue::Blank => false,
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in AND".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        };
+        
+        if !value {
+            return Ok(CellValue::Boolean(false));
+        }
+    }
+    
+    Ok(CellValue::Boolean(true))
+}
+
+// OR function - returns TRUE if any argument is TRUE
+fn or(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.is_empty() {
+        return Err(EngineError::EvaluationError("OR requires at least one argument".into()));
+    }
+    
+    for arg in args {
+        let value = match arg {
+            CellValue::Boolean(b) => *b,
+            CellValue::Number(n) => *n != 0.0,
+            CellValue::Text(t) => !t.is_empty(),
+            CellValue::Blank => false,
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in OR".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        };
+        
+        if value {
+            return Ok(CellValue::Boolean(true));
+        }
+    }
+    
+    Ok(CellValue::Boolean(false))
+}
+
+// NOT function - reverses the logical value of its argument
+fn not(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("NOT requires exactly one argument".into()));
+    }
+    
+    let value = match &args[0] {
+        CellValue::Boolean(b) => *b,
+        CellValue::Number(n) => *n != 0.0,
+        CellValue::Text(t) => !t.is_empty(),
+        CellValue::Blank => false,
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in NOT".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+    };
+    
+    Ok(CellValue::Boolean(!value))
+}
+
+// TRUE function - returns the logical value TRUE
+fn true_func(_args: &[CellValue]) -> Result<CellValue, EngineError> {
+    Ok(CellValue::Boolean(true))
+}
+
+// FALSE function - returns the logical value FALSE
+fn false_func(_args: &[CellValue]) -> Result<CellValue, EngineError> {
+    Ok(CellValue::Boolean(false))
+}
+
+// ISBLANK function - returns TRUE if value is blank
+fn is_blank(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("ISBLANK requires exactly one argument".into()));
+    }
+    
+    match &args[0] {
+        CellValue::Blank => Ok(CellValue::Boolean(true)),
+        _ => Ok(CellValue::Boolean(false)),
+    }
+}
+
+// ISERROR function - returns TRUE if value is an error
+fn is_error(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("ISERROR requires exactly one argument".into()));
+    }
+    
+    match &args[0] {
+        CellValue::Error(_) => Ok(CellValue::Boolean(true)),
+        _ => Ok(CellValue::Boolean(false)),
+    }
+}
+
+// ISNUMBER function - returns TRUE if value is a number
+fn is_number(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("ISNUMBER requires exactly one argument".into()));
+    }
+    
+    match &args[0] {
+        CellValue::Number(_) => Ok(CellValue::Boolean(true)),
+        _ => Ok(CellValue::Boolean(false)),
+    }
+}
+
+// ===== TEXT FUNCTIONS =====
+
+// CONCATENATE function - joins several text strings into one text string
+fn concatenate(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    let mut result = String::new();
+    
+    for arg in args {
+        match arg {
+            CellValue::Text(t) => result.push_str(t),
+            CellValue::Number(n) => result.push_str(&n.to_string()),
+            CellValue::Boolean(b) => result.push_str(if *b { "TRUE" } else { "FALSE" }),
+            CellValue::Blank => {},
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in CONCATENATE".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+        }
+    }
+    
+    Ok(CellValue::Text(result))
+}
+
+// LEFT function - returns the first character or characters in a text string
+fn left(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() < 1 || args.len() > 2 {
+        return Err(EngineError::EvaluationError("LEFT requires 1 or 2 arguments: text and [num_chars]".into()));
+    }
+    
+    let text = match &args[0] {
+        CellValue::Text(t) => t.clone(),
+        CellValue::Number(n) => n.to_string(),
+        CellValue::Boolean(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+        CellValue::Blank => "".to_string(),
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in LEFT".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+    };
+    
+    let num_chars = if args.len() == 2 {
+        match &args[1] {
+            CellValue::Number(n) => *n as usize,
+            _ => return Err(EngineError::EvaluationError("LEFT's second argument must be a number".into())),
+        }
+    } else {
+        1 // Default is 1 character
+    };
+    
+    let chars: Vec<char> = text.chars().collect();
+    let result: String = chars.iter().take(num_chars).collect();
+    
+    Ok(CellValue::Text(result))
+}
+
+// RIGHT function - returns the last character or characters in a text string
+fn right(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() < 1 || args.len() > 2 {
+        return Err(EngineError::EvaluationError("RIGHT requires 1 or 2 arguments: text and [num_chars]".into()));
+    }
+    
+    let text = match &args[0] {
+        CellValue::Text(t) => t.clone(),
+        CellValue::Number(n) => n.to_string(),
+        CellValue::Boolean(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+        CellValue::Blank => "".to_string(),
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in RIGHT".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+    };
+    
+    let num_chars = if args.len() == 2 {
+        match &args[1] {
+            CellValue::Number(n) => *n as usize,
+            _ => return Err(EngineError::EvaluationError("RIGHT's second argument must be a number".into())),
+        }
+    } else {
+        1 // Default is 1 character
+    };
+    
+    let chars: Vec<char> = text.chars().collect();
+    let len = chars.len();
+    let start = if num_chars >= len { 0 } else { len - num_chars };
+    let result: String = chars.iter().skip(start).collect();
+    
+    Ok(CellValue::Text(result))
+}
+
+// MID function - returns a specific number of characters from a text string
+fn mid(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 3 {
+        return Err(EngineError::EvaluationError("MID requires exactly 3 arguments: text, start_num, and num_chars".into()));
+    }
+    
+    let text = match &args[0] {
+        CellValue::Text(t) => t.clone(),
+        CellValue::Number(n) => n.to_string(),
+        CellValue::Boolean(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+        CellValue::Blank => "".to_string(),
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in MID".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+    };
+    
+    let start_num = match &args[1] {
+        CellValue::Number(n) => *n as usize,
+        _ => return Err(EngineError::EvaluationError("MID's second argument (start_num) must be a number".into())),
+    };
+    
+    let num_chars = match &args[2] {
+        CellValue::Number(n) => *n as usize,
+        _ => return Err(EngineError::EvaluationError("MID's third argument (num_chars) must be a number".into())),
+    };
+    
+    // Excel uses 1-based indexing for the start position
+    if start_num < 1 {
+        return Err(EngineError::EvaluationError("MID's start_num must be at least 1".into()));
+    }
+    
+    let chars: Vec<char> = text.chars().collect();
+    let start_index = start_num - 1; // Convert to 0-based indexing
+    
+    let result = if start_index >= chars.len() {
+        "".to_string() // If start is beyond the length, return empty string
+    } else {
+        chars.iter().skip(start_index).take(num_chars).collect()
+    };
+    
+    Ok(CellValue::Text(result))
+}
+
+// LEN function - returns the number of characters in a text string
+fn len(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("LEN requires exactly one argument".into()));
+    }
+    
+    let text = match &args[0] {
+        CellValue::Text(t) => t.clone(),
+        CellValue::Number(n) => n.to_string(),
+        CellValue::Boolean(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+        CellValue::Blank => "".to_string(),
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in LEN".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+    };
+    
+    Ok(CellValue::Number(text.chars().count() as f64))
+}
+
+// LOWER function - converts text to lowercase
+fn lower(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("LOWER requires exactly one argument".into()));
+    }
+    
+    let text = match &args[0] {
+        CellValue::Text(t) => t.clone(),
+        CellValue::Number(n) => n.to_string(),
+        CellValue::Boolean(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+        CellValue::Blank => "".to_string(),
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in LOWER".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+    };
+    
+    Ok(CellValue::Text(text.to_lowercase()))
+}
+
+// UPPER function - converts text to uppercase
+fn upper(args: &[CellValue]) -> Result<CellValue, EngineError> {
+    if args.len() != 1 {
+        return Err(EngineError::EvaluationError("UPPER requires exactly one argument".into()));
+    }
+    
+    let text = match &args[0] {
+        CellValue::Text(t) => t.clone(),
+        CellValue::Number(n) => n.to_string(),
+        CellValue::Boolean(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+        CellValue::Blank => "".to_string(),
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Cannot use unevaluated formula in UPPER".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
+    };
+    
+    Ok(CellValue::Text(text.to_uppercase()))
 }
