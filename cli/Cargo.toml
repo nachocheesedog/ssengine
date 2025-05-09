@@ -1,23 +1,23 @@
 [package]
 name = "ssengine-cli"
-version = { workspace = true }
-edition = { workspace = true }
-authors = { workspace = true }
-license = { workspace = true }
-repository = { workspace = true }
+version = "0.1.0"
+edition = "2021"
+authors = ["Cascade AI <cascade@windsurf.ai>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/user/ssengine"
 description = "Command-line interface for the ssengine spreadsheet engine."
-rust-version = { workspace = true }
+rust-version = "1.70"
 
 [dependencies]
 ssengine-core = { path = "../core" }
 ssengine-io = { path = "../io" }
 ssengine-sdk = { path = "../sdk" }
 
-serde = { workspace = true }
-serde_json = { workspace = true }
-thiserror = { workspace = true }
-log = { workspace = true }
-tokio = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+log = "0.4"
+tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] }
 
 # CLI argument parsing
 clap = { version = "4.4", features = ["derive"] }

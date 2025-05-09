@@ -1,22 +1,22 @@
 [package]
 name = "ssengine-sdk"
-version = { workspace = true }
-edition = { workspace = true }
-authors = { workspace = true }
-license = { workspace = true }
-repository = { workspace = true }
+version = "0.1.0"
+edition = "2021"
+authors = ["Cascade AI <cascade@windsurf.ai>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/user/ssengine"
 description = "HTTP/JSON API for AI agents to interact with the ssengine spreadsheet engine."
-rust-version = { workspace = true }
+rust-version = "1.70"
 
 [dependencies]
 ssengine-core = { path = "../core" }
 ssengine-io = { path = "../io" }
 
-serde = { workspace = true }
-serde_json = { workspace = true }
-thiserror = { workspace = true }
-log = { workspace = true }
-tokio = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+log = "0.4"
+tokio = { version = "1.35", features = ["macros", "rt-multi-thread"] }
 
 # HTTP server
 axum = "0.7"
@@ -24,7 +24,5 @@ axum = "0.7"
 schemars = "0.8"
 # CLI argument parsing
 clap = { version = "4.4", features = ["derive"] }
-# CORS handling
-tower-http = { version = "0.5", features = ["cors"] }
-# Logging middleware
-tower-http-log = "0.4"
+# HTTP middleware for CORS and logging
+tower-http = { version = "0.5", features = ["cors", "trace"] }

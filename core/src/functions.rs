@@ -60,6 +60,8 @@ fn sum(args: &[CellValue]) -> Result<CellValue, EngineError> {
             CellValue::Text(_) => return Err(EngineError::EvaluationError("Cannot sum text values".into())),
             CellValue::Boolean(b) => total += if *b { 1.0 } else { 0.0 },
             CellValue::Blank => {}, // Ignore blank cells
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Formulas should be evaluated before using in functions".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
         }
     }
     
@@ -83,6 +85,8 @@ fn average(args: &[CellValue]) -> Result<CellValue, EngineError> {
             },
             CellValue::Text(_) => return Err(EngineError::EvaluationError("Cannot average text values".into())),
             CellValue::Blank => {}, // Ignore blank cells
+            CellValue::Formula(_) => return Err(EngineError::EvaluationError("Formulas should be evaluated before using in functions".into())),
+            CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
         }
     }
     
@@ -104,6 +108,8 @@ fn if_func(args: &[CellValue]) -> Result<CellValue, EngineError> {
         CellValue::Number(n) => *n != 0.0,
         CellValue::Text(s) => !s.is_empty(),
         CellValue::Blank => false,
+        CellValue::Formula(_) => return Err(EngineError::EvaluationError("Formulas should be evaluated before using in functions".into())),
+        CellValue::Error(e) => return Err(EngineError::CellValueError(e.clone())),
     };
     
     if condition {

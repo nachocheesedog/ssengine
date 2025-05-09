@@ -1,0 +1,18 @@
+[package]
+name = "ssengine-examples"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+ssengine-core = { path = "../core" }
+ssengine-io = { path = "../io" }
+ssengine-sdk = { path = "../sdk" }
+
+[[bin]]
+name = "simple_model"
+path = "simple_model.rs"
+
+[[bin]]
+name = "minimal"
+path = "minimal.rs"
