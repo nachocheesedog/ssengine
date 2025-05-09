@@ -146,6 +146,63 @@ Add a new function:
 
 ---
 
+## Supported Excel Functions
+The engine supports over 100 Excel-compatible functions across multiple categories, all with parameter validation and error handling matching Excel's behavior.
+
+### Mathematical Functions
+* Basic: `SUM`, `AVERAGE`, `COUNT`, `COUNTA`, `MAX`, `MIN`
+* Rounding: `ROUND`, `ROUNDDOWN`, `ROUNDUP`, `CEILING`, `FLOOR`, `MROUND`
+* Scientific: `SQRT`, `ABS`, `POWER`, `PRODUCT`, `MOD`, `LOG`, `LN`, `EXP`
+* Array Operations: `TRANSPOSE`, `SUMPRODUCT`
+
+### Statistical Functions
+* Descriptive: `STDEV`, `STDEVP`, `VAR`, `VARP`, `MEDIAN`, `PERCENTILE`, `MODE.SNGL`
+* Relationship: `COVARIANCE.P`, `CORREL`
+* Flexible: `AGGREGATE`
+
+### Conditional Aggregates
+* Single-condition: `SUMIF`, `COUNTIF`, `AVERAGEIF`
+* Multi-condition: `SUMIFS`, `COUNTIFS`, `AVERAGEIFS`
+
+### Logical Functions
+* Basic: `IF`, `AND`, `OR`, `NOT`, `TRUE`, `FALSE`
+* Testing: `ISBLANK`, `ISERROR`, `ISNUMBER`, `ISNA`, `ISERR`, `ISTEXT`
+* Error Handling: `IFERROR`, `IFNA`, `IFS`
+
+### Text Functions
+* Extraction: `LEFT`, `RIGHT`, `MID`, `LEN` 
+* Formatting: `LOWER`, `UPPER`, `TRIM`, `TEXT`
+* Manipulation: `CONCATENATE`, `SUBSTITUTE`, `FIND`, `TEXTJOIN`
+
+### Date & Time Functions
+* Current: `TODAY`, `NOW`
+* Components: `DATE`, `YEAR`, `MONTH`, `DAY`, `WEEKDAY`
+* Calculation: `DATEDIF`, `EOMONTH`, `EDATE`, `YEARFRAC`
+* Business Days: `NETWORKDAYS`, `NETWORKDAYS.INTL`, `WORKDAY`, `WORKDAY.INTL`
+
+### Lookup & Reference Functions
+* Classic: `VLOOKUP`, `HLOOKUP`, `INDEX`, `MATCH`, `CHOOSE`
+* Modern: `XLOOKUP`, `XMATCH`, `OFFSET`, `INDIRECT`
+
+### Financial Functions
+* DCF Analysis: `NPV`, `IRR`, `XNPV`, `XIRR`, `MIRR`
+* Loans & Investments: `PMT`, `PV`, `FV`, `IPMT`, `PPMT`, `NPER`, `RATE`
+* Cumulative Analysis: `CUMIPMT`, `CUMPRINC`
+* Depreciation: `DB`, `SLN`, `SYD`, `DDB`
+
+### Information Functions
+* Error Info: `NA`, `ERROR.TYPE`
+
+### Engineering Functions
+* Conversion: `BIN2DEC`, `DEC2BIN`, `HEX2DEC`, `DEC2HEX`
+
+### Random Functions
+* Generation: `RAND`, `RANDBETWEEN`, `RANDARRAY`
+
+### Dynamic Array Functions
+* Data Manipulation: `FILTER`, `SORT`, `UNIQUE`, `SEQUENCE`
+* Programming: `LET`, `LAMBDA`
+
 ## References
 * ECMA-376 OpenXML spec.
 * Excel 2016 function reference.

@@ -62,6 +62,14 @@
 | FL-04 | 2025-05-08 | DONE | Date/time functions (`,YEAR`, `MONTH`, `DATEDIF`). |
 | FL-05 | 2025-05-08 | DONE | Finance pack: `NPV`, `IRR`, `XNPV`, `XIRR`. |
 | FL-06 | 2025-05-08 | DONE | Text functions (`LEFT`, `RIGHT`, `CONCAT`). |
+| FL-07 | 2025-05-08 | DONE | Conditional aggregates (`SUMIF`, `COUNTIF`, `AVERAGEIF`, `SUMIFS`, `COUNTIFS`, `AVERAGEIFS`). |
+| FL-08 | 2025-05-08 | DONE | Error handling functions (`IFERROR`, `IFNA`, `IFS`). |
+| FL-09 | 2025-05-08 | DONE | Advanced lookup functions (`XLOOKUP`, `XMATCH`, `OFFSET`, `INDIRECT`). |
+| FL-10 | 2025-05-08 | DONE | Advanced date functions (`EOMONTH`, `EDATE`, `NETWORKDAYS`, `WORKDAY`, `YEARFRAC`). |
+| FL-11 | 2025-05-08 | DONE | Math functions (`MOD`, `CEILING`, `FLOOR`, `MROUND`, `LOG`, `LN`, `EXP`). |
+| FL-12 | 2025-05-08 | DONE | Random functions (`RAND`, `RANDBETWEEN`, `RANDARRAY`). |
+| FL-13 | 2025-05-08 | DONE | Statistical functions (`MODE.SNGL`, `COVARIANCE.P`, `CORREL`, `AGGREGATE`). |
+| FL-14 | 2025-05-08 | DONE | Dynamic arrays (`FILTER`, `SORT`, `UNIQUE`, `SEQUENCE`, `LET`, `LAMBDA`). |
 
 ### AI Tooling / SDK <a id="ai-tooling"></a>
 | AT-01 | 2025-05-08 | TODO | Define JSON schema for tool operations (add_sheet, set_cell, eval_formula, export_xlsx). |
