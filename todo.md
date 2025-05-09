@@ -24,7 +24,7 @@
 |---|---|---|
 | P0 | Minimal Viable Engine | Parse & evaluate formulas, write multi-sheet XLSX |
 | P0 | AI SDK | JSON-RPC interface callable by LLM-agents |
-| P1 | Finance Function Pack | ✅ NPV, IRR, PMT, PV, FV implemented. Examples in dcf_model.rs |
+| P1 | Finance Function Pack | NPV, IRR, PMT, PV, FV implemented. Examples in dcf_model.rs |
 | P1 | Import Support | Read XLSX/CSV for context enrichment |
 | P2 | Optimisations | Incremental recalc, parallelism |
 | P2 | Expanded Function Pack | Statistics, text, lookup |
@@ -44,10 +44,10 @@
 | CE-02 | 2025-05-08 | TODO | Define `Cell`, `Sheet`, `Workbook` structs – follow SRP. |
 | CE-03 | 2025-05-08 | TODO | Implement dependency graph for formula recalculation. |
 | CE-04 | 2025-05-08 | TODO | Implement formula parser (PEG / pest) yielding AST. |
-| CE-05 | 2025-05-08 | TODO | Implement evaluator w/ basic math & references. |
-| CE-06 | 2025-05-08 | TODO | Handle cross-sheet references. |
-| CE-07 | 2025-05-08 | TODO | Error propagation (DIV/0!, #REF!, etc.). |
-| CE-08 | 2025-05-08 | TODO | Circular reference detection. |
+| CE-05 | 2025-05-08 | DONE | Implement evaluator w/ basic math & references. |
+| CE-06 | 2025-05-08 | DONE | Handle cross-sheet references. |
+| CE-07 | 2025-05-08 | DONE | Error propagation (DIV/0!, #REF!, etc.). |
+| CE-08 | 2025-05-08 | DONE | Circular reference detection. |
 
 ### I/O – XLSX + CSV <a id="io"></a>
 | IO-01 | 2025-05-08 | TODO | Add XLSX writer using `rust_xlsxwriter`. |
