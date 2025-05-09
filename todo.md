@@ -14,6 +14,8 @@
    9. [Documentation](#documentation)
 3. [Design References](#design-references)
 4. [Security Checklist](#security-checklist)
+5. [Design Decisions & Architecture](#design-decisions--architecture)
+6. [Execution Plan & Milestones](#execution-plan--milestones)
 
 ---
 
@@ -114,3 +116,64 @@
 - [ ] Exported files sanitized against path traversal.  
 - [ ] Web SDK endpoints rate-limited & CORS-controlled.  
 - [ ] User-provided formulas executed in-process only – no external eval.  
+
+---
+
+## Design Decisions & Architecture
+
+### Data Model
+- **Sparse storage**: Each `Sheet` maintains a `HashMap<(u32, u32), Cell>` to save memory on large but lightly-populated models.
+- **Column meta cache**: Separate vector stores column widths, formats, and statistics for fast lookup operations.
+- **Cell**: enum‐based value holder (`Number(f64)`, `Text(String)`, `Bool(bool)`, `Datetime(DateTime<Utc>)`, `Error(CellError)`, `Formula(String)`).
+- **Workbook**: owns sheets and a global string table to de-duplicate repeated text (similar to XLSX sharedStrings).
+
+### Formula Parsing & Evaluation
+- **Grammar**: Excel-compatible grammar expressed in a `pest` file (`excel.pest`).
+- **AST**: Simplified node kinds (`Literal`, `Reference`, `UnaryOp`, `BinaryOp`, `FunctionCall`, `Range`).
+- **Dependency Graph**: Directed acyclic graph (DAG) keyed by cell coordinates, produced during parse, stored via `petgraph`.
+- **Recalc Strategy**: Topological sort with incremental dirty-flag evaluation; fallback full recompute when graph cycles detected.
+
+### Crate Workspace Layout
+```
+ssengine/
+ ├─ core/        # data model, parser, evaluator
+ ├─ io/          # xlsx/csv read-write
+ ├─ sdk/         # HTTP/JSON SDK for AI agents
+ ├─ cli/         # optional CLI utility
+ └─ examples/    # sample workbooks & integration tests
+```
+
+### Third-Party Libraries (OSI-approved)
+| Purpose | Crate | License |
+|---|---|---|
+| Formula parsing | `pest` | MIT/Apache-2.0 |
+| XLSX writing | `rust_xlsxwriter` | MIT |
+| XLSX reading | `calamine` | MIT |
+| HashMap | `hashbrown` | Apache-2.0 |
+| Graph | `petgraph` | MIT |
+| HTTP server | `axum` | MIT |
+| Async runtime | `tokio` | MIT |
+| Testing | `criterion`, `proptest` | Apache-2.0 |
+
+### Concurrency & Performance
+- Rayon parallel iterator for evaluating independent subgraphs.
+- Interior mutability via `RwLock` at sheet level; read-heavy workloads scale.
+- Cache numeric function results for idempotent pure functions (e.g., `NPV`).
+
+### Error Handling
+- `thiserror`-based rich error enum; every error convertible to HTTP JSON error for SDK.
+
+---
+
+## Execution Plan & Milestones
+| Sprint | Dates | Focus | Key Deliverables |
+|---|---|---|---|
+| 0 | May 08 → May 14 | Project scaffolding & infrastructure | Cargo workspace, CI pipeline, docs skeleton |
+| 1 | May 15 → May 28 | Core engine v0 | Data model, parser v0, evaluator basic math, unit tests |
+| 2 | May 29 → Jun 11 | I/O layer | XLSX writer (rust_xlsxwriter), CSV helpers, basic styles |
+| 3 | Jun 12 → Jun 25 | Formula library phase 1 | Arithmetic agg functions, logical, lookup v1 |
+| 4 | Jun 26 → Jul 09 | AI SDK v1 | JSON schema, Axum server, OpenAI manifest example |
+| 5 | Jul 10 → Jul 23 | Finance pack & benchmarks | NPV/IRR/XIRR, criterion benches, optimisation pass |
+| 6 | Jul 24 → Aug 06 | Import support & UX polish | XLSX reader, CLI utility, docs update |
+| 7 | Aug 07 → Aug 20 | Parallelism & streaming mode | Incremental recalc, Rayon, in-memory daemon |
+| 8 | Aug 21 → Sep 03 | Hardening & release v1.0 | Fuzzing, security audit, full docs, crates.io publish |
