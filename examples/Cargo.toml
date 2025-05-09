@@ -16,3 +16,7 @@ path = "simple_model.rs"
 [[bin]]
 name = "minimal"
 path = "minimal.rs"
+
+[[bin]]
+name = "dcf_model"
+path = "dcf_model.rs"

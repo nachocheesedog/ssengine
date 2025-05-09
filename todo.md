@@ -24,7 +24,7 @@
 |---|---|---|
 | P0 | Minimal Viable Engine | Parse & evaluate formulas, write multi-sheet XLSX |
 | P0 | AI SDK | JSON-RPC interface callable by LLM-agents |
-| P1 | Finance Function Pack | NPV, IRR, XNPV, XIRR, etc. |
+| P1 | Finance Function Pack | ✅ NPV, IRR, PMT, PV, FV implemented. Examples in dcf_model.rs |
 | P1 | Import Support | Read XLSX/CSV for context enrichment |
 | P2 | Optimisations | Incremental recalc, parallelism |
 | P2 | Expanded Function Pack | Statistics, text, lookup |
@@ -60,7 +60,7 @@
 | FL-02 | 2025-05-08 | TODO | Implement logical functions (`IF`, `AND`, `OR`, `NOT`). |
 | FL-03 | 2025-05-08 | TODO | Lookup functions (`VLOOKUP`, `HLOOKUP`, `INDEX`, `MATCH`). |
 | FL-04 | 2025-05-08 | TODO | Date/time functions (`,YEAR`, `MONTH`, `DATEDIF`). |
-| FL-05 | 2025-05-08 | TODO | Finance pack: `NPV`, `IRR`, `XNPV`, `XIRR`. |
+| FL-05 | 2025-05-08 | DONE | Finance pack: `NPV`, `IRR`, `XNPV`, `XIRR`. |
 | FL-06 | 2025-05-08 | TODO | Text functions (`LEFT`, `RIGHT`, `CONCAT`). |
 
 ### AI Tooling / SDK <a id="ai-tooling"></a>
@@ -173,7 +173,7 @@ ssengine/
 | 2 | May 29 → Jun 11 | I/O layer | XLSX writer (rust_xlsxwriter), CSV helpers, basic styles |
 | 3 | Jun 12 → Jun 25 | Formula library phase 1 | Arithmetic agg functions, logical, lookup v1 |
 | 4 | Jun 26 → Jul 09 | AI SDK v1 | JSON schema, Axum server, OpenAI manifest example |
-| 5 | Jul 10 → Jul 23 | Finance pack & benchmarks | NPV/IRR/XIRR, criterion benches, optimisation pass |
+| 5 | Jul 10 → Jul 23 | Finance pack & benchmarks | **In Progress**: NPV/IRR implemented, PV/FV/PMT added, dcf_model.rs example created, remaining items: XIRR, criterion benches, optimisation pass |
 | 6 | Jul 24 → Aug 06 | Import support & UX polish | XLSX reader, CLI utility, docs update |
 | 7 | Aug 07 → Aug 20 | Parallelism & streaming mode | Incremental recalc, Rayon, in-memory daemon |
 | 8 | Aug 21 → Sep 03 | Hardening & release v1.0 | Fuzzing, security audit, full docs, crates.io publish |
