@@ -48,23 +48,73 @@ pub struct Evaluator {
 }
 
 impl Evaluator {
+    /// Create a new Evaluator with default functions registered
     pub fn new() -> Self {
-        Evaluator {
-            function_registry: FunctionRegistry::new(),
-        }
+        let mut eval = Evaluator { function_registry: FunctionRegistry::new() };
+        eval.function_registry.register_defaults();
+        eval
     }
-    
-    // Evaluate an AST node
+
+    /// Evaluate a formula string by parsing to AST and evaluating
+    pub fn evaluate_formula(&self, workbook: &Workbook, sheet: &str, formula: &str) -> Result<CellValue, EngineError> {
+        let ast = crate::parser::parse_formula(formula)?;
+        let mut ctx = EvaluationContext::new(workbook, sheet, CellAddress::from_a1(formula)?);
+        self.evaluate(&ast, &mut ctx)
+    }
+
+    /// Evaluate an AST node
     pub fn evaluate(&self, node: &AstNode, context: &mut EvaluationContext) -> Result<CellValue, EngineError> {
         match node {
-            // Basic implementation - will be expanded upon
-            AstNode::Literal(lit) => match lit {
-                Literal::Number(n) => Ok(CellValue::Number(*n)),
-                Literal::Text(s) => Ok(CellValue::Text(s.clone())),
-                Literal::Boolean(b) => Ok(CellValue::Boolean(*b)),
-                Literal::Error(e) => Err(EngineError::EvaluationError(format!("Error literal: {:?}", e))),
-            },
-            _ => Err(EngineError::NotImplemented("AST node evaluation".to_string())),
+            AstNode::Literal(lit) => self.evaluate_literal(lit),
+            AstNode::Reference(r) => context.resolve_reference(r),
+            AstNode::BinaryOp{op,left,right} => self.evaluate_binary_op(op, left, right, context),
+            AstNode::UnaryOp{op,operand} => self.evaluate_unary_op(op, operand, context),
+            AstNode::FunctionCall{name,args} => self.evaluate_function(name, args, context),
         }
     }
+
+    fn evaluate_literal(&self, lit: &Literal) -> Result<CellValue, EngineError> {
+        Ok(match lit {
+            Literal::Number(n) => CellValue::Number(*n),
+            Literal::Text(s) => CellValue::Text(s.clone()),
+            Literal::Boolean(b) => CellValue::Boolean(*b),
+            Literal::Error(e) => CellValue::Error(e.clone()),
+        })
+    }
+
+    fn evaluate_binary_op(&self, op: &BinaryOperator, l: &AstNode, r: &AstNode, ctx: &mut EvaluationContext) -> Result<CellValue, EngineError> {
+        let lv = self.evaluate(l, ctx)?;
+        let rv = self.evaluate(r, ctx)?;
+        match op {
+            BinaryOperator::Add => self.add(&lv, &rv),
+            BinaryOperator::Subtract => self.subtract(&lv, &rv),
+            BinaryOperator::Multiply => self.multiply(&lv, &rv),
+            BinaryOperator::Divide => self.divide(&lv, &rv),
+            BinaryOperator::Power => self.power(&lv, &rv),
+            BinaryOperator::Equal => self.equal(&lv, &rv),
+            BinaryOperator::NotEqual => self.not_equal(&lv, &rv),
+            BinaryOperator::LessThan => self.less_than(&lv, &rv),
+            BinaryOperator::LessThanOrEqual => self.less_than_or_equal(&lv, &rv),
+            BinaryOperator::GreaterThan => self.greater_than(&lv, &rv),
+            BinaryOperator::GreaterThanOrEqual => self.greater_than_or_equal(&lv, &rv),
+            BinaryOperator::Concat => self.concatenate(&lv, &rv),
+        }
+    }
+
+    fn evaluate_unary_op(&self, op: &UnaryOperator, node: &AstNode, ctx: &mut EvaluationContext) -> Result<CellValue, EngineError> {
+        let v = self.evaluate(node, ctx)?;
+        match op {
+            UnaryOperator::Positive => Ok(v),
+            UnaryOperator::Negative => self.negate(&v),
+            UnaryOperator::Percent => self.percent(&v),
+        }
+    }
+
+    fn evaluate_function(&self, name: &str, args: &[AstNode], ctx: &mut EvaluationContext) -> Result<CellValue, EngineError> {
+        let mut vals = Vec::new();
+        for a in args { vals.push(self.evaluate(a, ctx)?); }
+        self.function_registry.call(name, &vals)
+    }
+
+    // -- Operator helpers omitted for brevity --
 }
